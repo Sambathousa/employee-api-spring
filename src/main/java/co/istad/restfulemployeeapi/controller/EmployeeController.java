@@ -4,6 +4,7 @@ import co.istad.restfulemployeeapi.dto.CreateEmployeeRequest;
 import co.istad.restfulemployeeapi.dto.EmployeeResponse;
 import co.istad.restfulemployeeapi.service.EmployeeService;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +29,7 @@ public class EmployeeController {
 
     @PostMapping
     public EmployeeResponse createEmployee(
-            @RequestBody CreateEmployeeRequest createRequest
+            @Valid @RequestBody CreateEmployeeRequest createRequest
             ) {
         return service.createEmployee(createRequest);
     }
