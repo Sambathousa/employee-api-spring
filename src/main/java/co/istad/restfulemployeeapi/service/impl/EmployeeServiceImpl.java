@@ -28,23 +28,12 @@ public class EmployeeServiceImpl implements EmployeeService {
         return repository.getEmployees()
                 .stream()
                 .map(employeeMapper::toResponse)
-                // emp -> mapper.toResponse(emp)
                 .toList();
     }
 
     @Override
     public EmployeeResponse getEmployeeById(Integer id) {
-        return repository.getEmployees()
-                .stream()
-                .filter(emp -> emp.getId().equals(id))
-                .findFirst()
-                .map(employeeMapper::toResponse)
-                .orElseThrow(
-                        () -> new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "Employee with id: %d not found".formatted(id)
-                        )
-                );
+        return employeeMapper.toResponse(findEmployeeById(id));
     }
 
     @Override
@@ -68,18 +57,56 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public EmployeeResponse updateEmployeeById(Integer id, UpdateEmployeeRequest updateEmployeeRequest) {
-        return null;
+
+        Employee employee = findEmployeeById(id);
+
+        // Only check for duplicates if the email is actually changing
+        String newEmail = updateEmployeeRequest.email();
+        if (newEmail != null
+                && !newEmail.equals(employee.getEmail())
+                && checkIfEmailExists(newEmail)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Email already exists"
+            );
+        }
+
+        employeeMapper.updateEmployeeFromRequest(updateEmployeeRequest, employee);
+
+        return employeeMapper.toResponse(employee);
     }
 
     @Override
     public void deleteEmployeeById(Integer id) {
 
+        boolean removed = repository.getEmployees()
+                .removeIf(emp -> emp.getId().equals(id));
+
+        if (!removed) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Employee with id: %d not found".formatted(id)
+            );
+        }
     }
 
     private boolean checkIfEmailExists(String email) {
         return repository.getEmployees()
                 .stream()
                 .anyMatch(emp -> emp.getEmail().equals(email));
+    }
+
+    private Employee findEmployeeById(Integer id) {
+        return repository.getEmployees()
+                .stream()
+                .filter(emp -> emp.getId().equals(id))
+                .findFirst()
+                .orElseThrow(
+                        () -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Employee with id: %d not found".formatted(id)
+                        )
+                );
     }
 
 }

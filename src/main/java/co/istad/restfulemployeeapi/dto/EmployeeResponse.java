@@ -5,17 +5,17 @@ import java.time.LocalDate;
 
 public record EmployeeResponse(
 
-    Integer id,
+        Integer id,
 
-    String name,
+        String name,
 
-    String email,
+        String email,
 
-    BigDecimal salary,
+        BigDecimal salary,
 
-    LocalDate hireDate,
+        LocalDate hireDate,
 
-    Boolean isActive
+        Boolean isActive
 
 ) {
 }
